@@ -696,3 +696,109 @@ select:focus {
   flex-direction: column;
   gap: 0.4rem;
 }
+
+/* =============================================================================
+   21. ANIMATED BLOB BACKGROUND
+   Blobs sit behind all content (z-index: -1) and drift slowly with CSS
+   @keyframes. Colors are scoped to [data-period] so they automatically
+   update when ThemeManager.applyPeriod() fires. Low opacity + heavy blur
+   keep them subtle and non-distracting.
+   ============================================================================= */
+
+/* Fixed viewport container — never affects layout */
+.blob-container {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  /* Sits below the page chrome but above the <html> background */
+}
+
+/* Shared blob shape */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.45;
+  will-change: transform;
+}
+
+/* Light mode: slightly more visible blobs */
+[data-theme="light"] .blob { opacity: 0.38; }
+/* Dark mode: a touch stronger to read against near-black bg */
+[data-theme="dark"]  .blob { opacity: 0.50; }
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .blob { animation: none !important; }
+}
+
+/* ── Keyframe animations ── */
+@keyframes blob-drift-a {
+  0%   { transform: translate(0px,    0px)   scale(1.00); }
+  30%  { transform: translate(40px,  -55px)  scale(1.06); }
+  60%  { transform: translate(-30px,  35px)  scale(0.95); }
+  100% { transform: translate(0px,    0px)   scale(1.00); }
+}
+@keyframes blob-drift-b {
+  0%   { transform: translate(0px,    0px)   scale(1.00); }
+  25%  { transform: translate(-50px,  40px)  scale(1.04); }
+  55%  { transform: translate(35px,  -30px)  scale(0.97); }
+  100% { transform: translate(0px,    0px)   scale(1.00); }
+}
+@keyframes blob-drift-c {
+  0%   { transform: translate(0px,    0px)   scale(1.00); }
+  40%  { transform: translate(30px,   50px)  scale(1.05); }
+  70%  { transform: translate(-40px, -20px)  scale(0.96); }
+  100% { transform: translate(0px,    0px)   scale(1.00); }
+}
+
+/* ── Individual blob positions, sizes, and animation timing ── */
+.blob-1 {
+  width: 520px; height: 520px;
+  top: -10%; left: -8%;
+  animation: blob-drift-a 22s ease-in-out infinite;
+}
+.blob-2 {
+  width: 460px; height: 460px;
+  top: 35%; right: -10%;
+  animation: blob-drift-b 18s ease-in-out infinite;
+  animation-delay: -7s;
+}
+.blob-3 {
+  width: 400px; height: 400px;
+  bottom: -8%; left: 30%;
+  animation: blob-drift-c 25s ease-in-out infinite;
+  animation-delay: -13s;
+}
+
+/* ── Period-scoped blob colors ──
+   Each period gets 3 blob colors that harmonize with --accent/--bg for
+   that period. light/dark variants are handled by opacity above. */
+
+/* Morning — warm amber / golden yellow / soft peach */
+[data-period="morning"] .blob-1 { background: #F59E0B; }
+[data-period="morning"] .blob-2 { background: #FCD34D; }
+[data-period="morning"] .blob-3 { background: #FB923C; }
+
+/* Afternoon — sky blue / cyan / teal */
+[data-period="afternoon"] .blob-1 { background: #38BDF8; }
+[data-period="afternoon"] .blob-2 { background: #0EA5E9; }
+[data-period="afternoon"] .blob-3 { background: #06B6D4; }
+
+/* Evening — soft purple / rose / violet */
+[data-period="evening"] .blob-1 { background: #A855F7; }
+[data-period="evening"] .blob-2 { background: #EC4899; }
+[data-period="evening"] .blob-3 { background: #8B5CF6; }
+
+/* Night — deep indigo / navy / midnight blue */
+[data-period="night"] .blob-1 { background: #3B82F6; }
+[data-period="night"] .blob-2 { background: #6366F1; }
+[data-period="night"] .blob-3 { background: #1D4ED8; }
+
+/* ── Ensure all real content sits above the blobs ── */
+header, main, footer {
+  position: relative;
+  z-index: 1;
+}

@@ -1517,11 +1517,41 @@ var QuickLinksModule = (function () {
   };
 })();
 
+// ─── BlobBackground ───────────────────────────────────────────────────────────
+// Injects 3 absolutely-positioned blob divs into <body> and keeps their
+// color in sync with the current time-of-day period via CSS custom properties
+// on [data-period]. Animation is handled entirely by CSS @keyframes.
+var BlobBackground = (function () {
+  'use strict';
+
+  var _container = null;
+
+  function init() {
+    // Create the fixed container
+    _container = document.createElement('div');
+    _container.className = 'blob-container';
+    _container.setAttribute('aria-hidden', 'true');
+
+    // Create 3 blobs
+    for (var i = 1; i <= 3; i++) {
+      var blob = document.createElement('div');
+      blob.className = 'blob blob-' + i;
+      _container.appendChild(blob);
+    }
+
+    // Insert as the first child of <body> so it's behind everything
+    document.body.insertBefore(_container, document.body.firstChild);
+  }
+
+  return { init: init };
+})();
+
 // ─── Bootstrap ────────────────────────────────────────────────────────────────
 // Initialise all modules in dependency order once the DOM is ready.
 // Requirements: 1.3, 2.7, 11.5, 11.6, 12.6
 document.addEventListener('DOMContentLoaded', function () {
   // StorageService needs no init — it is ready as soon as it is defined.
+  BlobBackground.init();   // inject blobs before other modules run
   ThemeManager.init();
   ClockModule.init();
   GreetingModule.init();
