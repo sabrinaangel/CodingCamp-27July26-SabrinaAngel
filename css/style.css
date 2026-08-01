@@ -802,3 +802,140 @@ header, main, footer {
   position: relative;
   z-index: 1;
 }
+
+/* =============================================================================
+   22. UI POLISH & MICRO-INTERACTIONS
+   ============================================================================= */
+
+/* ── 1. Smooth theme transition ── */
+/* Already handled by html/body transition in section 3, plus .card/.section
+   transitions. Extend to all colour-bearing properties here. */
+html, body, .card, section, button, input, select {
+  transition-property: background-color, color, border-color, box-shadow;
+  transition-duration: 300ms;
+  transition-timing-function: ease;
+}
+/* Don't override blob or animation-specific transitions */
+.blob { transition: none; }
+
+/* ── 2. Card hover lift ── */
+.card,
+section.card {
+  transition: background-color 300ms ease,
+              border-color 300ms ease,
+              transform 200ms ease,
+              box-shadow 200ms ease;
+}
+.card:hover,
+section.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+[data-theme="dark"] .card:hover,
+[data-theme="dark"] section.card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+/* Disable lift on cards that are in edit mode — less jarring */
+.card:has(.task-item.editing):hover {
+  transform: none;
+}
+
+/* ── 3. Button press effect ── */
+button:active:not(:disabled) {
+  transform: scale(0.95);
+  transition-duration: 80ms;
+}
+
+/* ── 4a. Task slide-in animation ── */
+@keyframes task-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.task-item.is-entering {
+  animation: task-slide-in 280ms ease forwards;
+}
+
+/* ── 4b. Task fade-out animation ── */
+@keyframes task-fade-out {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    max-height: 80px;
+    margin-bottom: 0;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(12px) scale(0.97);
+    max-height: 0;
+    margin-bottom: -4px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+.task-item.is-leaving {
+  overflow: hidden;
+  animation: task-fade-out 220ms ease forwards;
+  pointer-events: none;
+}
+
+/* ── 5. Toast / snackbar ── */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+@keyframes toast-out {
+  from { opacity: 1; transform: translateY(0)    scale(1); }
+  to   { opacity: 0; transform: translateY(8px)  scale(0.97); }
+}
+
+#toast-container {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: var(--text);
+  color: var(--bg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  animation: toast-in 220ms ease forwards;
+  white-space: nowrap;
+}
+
+.toast.toast--leaving {
+  animation: toast-out 200ms ease forwards;
+}
+
+/* Respect reduced-motion for all new animations */
+@media (prefers-reduced-motion: reduce) {
+  .task-item.is-entering,
+  .task-item.is-leaving,
+  .toast,
+  .toast.toast--leaving {
+    animation: none !important;
+    transition: none !important;
+  }
+  .card:hover, section.card:hover {
+    transform: none;
+  }
+}

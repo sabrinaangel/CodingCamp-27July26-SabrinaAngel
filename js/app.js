@@ -963,6 +963,7 @@ var TaskModule = (function () {
   var _tasks       = [];   // in-memory task array
   var _sortOrder   = 'default';
   var _nextIndex   = 0;    // monotonically increasing insertion index
+  var _lastAddedId = null; // id of most-recently added task — triggers slide-in
 
   // ── Pure helpers (Tasks 8.1 / Properties 5, 6, 7) ──────────────────────────
 
@@ -1075,7 +1076,9 @@ var TaskModule = (function () {
 
     sorted.forEach(function (task) {
       var li = document.createElement('li');
-      li.className = 'task-item' + (task.completed ? ' completed' : '');
+      var liClass = 'task-item' + (task.completed ? ' completed' : '');
+      if (task.id === _lastAddedId) { liClass += ' is-entering'; }
+      li.className = liClass;
       li.setAttribute('data-id', task.id);
 
       // Checkbox
@@ -1249,8 +1252,10 @@ var TaskModule = (function () {
 
     _clearInputError();
 
+    var newId = Date.now().toString();
+    _lastAddedId = newId;
     _tasks.push({
-      id: Date.now().toString(),
+      id: newId,
       description: trimmed,
       completed: false,
       insertionIndex: _nextIndex++
@@ -1258,10 +1263,16 @@ var TaskModule = (function () {
 
     StorageService.save(STORAGE_KEY, _tasks);
     _render();
+    // Clear the entering marker after the animation completes
+    setTimeout(function () { _lastAddedId = null; }, 300);
 
     // Clear input
     var input = _inputEl();
     if (input) input.value = '';
+
+    if (typeof Toast !== 'undefined') {
+      Toast.show('Task added');
+    }
 
     return { ok: true };
   }
@@ -1305,9 +1316,21 @@ var TaskModule = (function () {
   }
 
   function deleteTask(id) {
-    _tasks = _tasks.filter(function (t) { return t.id !== id; });
-    StorageService.save(STORAGE_KEY, _tasks);
-    _render();
+    // Find the DOM element and play exit animation before removing from state
+    var list = _listEl();
+    var li = list ? list.querySelector('[data-id="' + id + '"]') : null;
+    if (li && !li.classList.contains('is-leaving')) {
+      li.classList.add('is-leaving');
+      setTimeout(function () {
+        _tasks = _tasks.filter(function (t) { return t.id !== id; });
+        StorageService.save(STORAGE_KEY, _tasks);
+        _render();
+      }, 230);
+    } else {
+      _tasks = _tasks.filter(function (t) { return t.id !== id; });
+      StorageService.save(STORAGE_KEY, _tasks);
+      _render();
+    }
   }
 
   function setSortOrder(order) {
@@ -1499,6 +1522,10 @@ var QuickLinksModule = (function () {
     // Clear inputs on success
     if (_labelInputEl()) _labelInputEl().value = '';
     if (_urlInputEl())   _urlInputEl().value   = '';
+
+    if (typeof Toast !== 'undefined') {
+      Toast.show('Link added');
+    }
   }
 
   function deleteLink(id) {
@@ -1515,6 +1542,51 @@ var QuickLinksModule = (function () {
     _validateLabel: _validateLabel,
     _validateUrl  : _validateUrl,
   };
+})();
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+// Lightweight toast/snackbar system. One shared container, stacked toasts,
+// auto-dismiss after ~2s with a smooth exit animation.
+var Toast = (function () {
+  'use strict';
+
+  var _container = null;
+
+  function _ensureContainer() {
+    if (_container) return;
+    _container = document.createElement('div');
+    _container.id = 'toast-container';
+    _container.setAttribute('aria-live', 'polite');
+    _container.setAttribute('aria-atomic', 'false');
+    document.body.appendChild(_container);
+  }
+
+  /**
+   * Show a toast message.
+   * @param {string} message
+   * @param {number} [duration=2000]  Auto-dismiss delay in ms
+   */
+  function show(message, duration) {
+    _ensureContainer();
+    var ms = (typeof duration === 'number') ? duration : 2000;
+
+    var el = document.createElement('div');
+    el.className = 'toast';
+    el.textContent = message;
+    el.setAttribute('role', 'status');
+    _container.appendChild(el);
+
+    // After `ms`, play exit animation then remove
+    setTimeout(function () {
+      el.classList.add('toast--leaving');
+      // Remove after the 200ms exit animation
+      setTimeout(function () {
+        if (el.parentNode) el.parentNode.removeChild(el);
+      }, 210);
+    }, ms);
+  }
+
+  return { show: show };
 })();
 
 // ─── BlobBackground ───────────────────────────────────────────────────────────
