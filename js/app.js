@@ -1119,20 +1119,39 @@ var TaskModule = (function () {
   }
 
   function _activateEditMode(li, task) {
-    // Replace description span + edit button with an inline edit field + save/cancel
+    // Switch the <li> to column layout so the input row gets the full width
+    li.classList.add('editing');
     li.innerHTML = '';
+
+    // ── Input row ────────────────────────────────────────────────────────────
+    var editRow = document.createElement('div');
+    editRow.className = 'task-edit-row';
 
     var editInput = document.createElement('input');
     editInput.type = 'text';
     editInput.className = 'task-edit-input';
-    editInput.value = task.description;
     editInput.maxLength = 200;
-    editInput.setAttribute('aria-label', 'Edit description');
+    editInput.setAttribute('aria-label', 'Edit task description');
 
+    // Look up the live task object so we always get the current description,
+    // even if _render() was called since the edit button was first rendered.
+    var liveTask = null;
+    for (var i = 0; i < _tasks.length; i++) {
+      if (_tasks[i].id === task.id) { liveTask = _tasks[i]; break; }
+    }
+    editInput.value = liveTask ? liveTask.description : task.description;
+
+    editRow.appendChild(editInput);
+
+    // ── Validation message ───────────────────────────────────────────────────
     var errorSpan = document.createElement('span');
-    errorSpan.role = 'alert';
+    errorSpan.setAttribute('role', 'alert');
     errorSpan.className = 'validation-msg';
     errorSpan.setAttribute('hidden', '');
+
+    // ── Action buttons row ───────────────────────────────────────────────────
+    var actionsRow = document.createElement('div');
+    actionsRow.className = 'task-edit-actions';
 
     var saveBtn = document.createElement('button');
     saveBtn.type = 'button';
@@ -1152,11 +1171,15 @@ var TaskModule = (function () {
       _render();
     });
 
-    li.appendChild(editInput);
+    actionsRow.appendChild(saveBtn);
+    actionsRow.appendChild(cancelBtn);
+
+    li.appendChild(editRow);
     li.appendChild(errorSpan);
-    li.appendChild(saveBtn);
-    li.appendChild(cancelBtn);
+    li.appendChild(actionsRow);
     editInput.focus();
+    // Place cursor at end of existing text
+    editInput.setSelectionRange(editInput.value.length, editInput.value.length);
   }
 
   // ── Public CRUD methods ───────────────────────────────────────────────────────

@@ -548,28 +548,52 @@ select:focus {
    17. TASK EDIT INPUT — rendered by TaskModule._activateEditMode()
    ============================================================================= */
 
+/* The <li> in edit mode switches to a flex-column layout so the input
+   takes a full row before the Save/Cancel buttons appear below it. */
+.task-item.editing {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+}
+
+.task-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
 .task-edit-input {
-  flex: 1;
-  padding: 0.35rem 0.6rem;
+  /* Must fill available horizontal space — min-width:0 overrides the browser
+     default of min-width:auto on flex children, which causes inputs to collapse
+     to ~1 character wide when sibling buttons consume flex space. */
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
   border: 1px solid var(--accent);
   border-radius: 6px;
-  /* Use --surface (not --bg) so the field always has a mid-tone background
-     that contrasts against --text in every theme, including dark modes where
-     --bg is near-black and would cause invisible text. */
+  /* --surface gives a mid-tone background that contrasts against --text in
+     every theme/period combination, including near-black dark modes. */
   background-color: var(--surface);
   color: var(--text);
   font-size: 0.9375rem;
-  /* Ensure inherited font renders correctly and cursor is text */
   font-family: inherit;
   cursor: text;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 
 .task-edit-input:focus {
   outline: none;
-  /* Accent-tinted ring — visible in both light and dark themes.
-     Falls back to a semi-transparent accent for browsers without color-mix. */
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 0, 0, 0), 0.25),
-              0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
+  border-color: var(--accent);
+  /* accent-tinted ring, visible in both light and dark themes */
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.task-edit-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
 }
 
 /* =============================================================================
