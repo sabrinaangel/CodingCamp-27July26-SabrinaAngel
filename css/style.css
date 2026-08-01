@@ -1,0 +1,665 @@
+/* css/style.css — To-Do List Life Dashboard */
+
+/* =============================================================================
+   1. CSS CUSTOM PROPERTIES — 8 theme × period combinations
+   Attributes are set on <html> by the FOUC-guard inline script and ThemeManager.
+   ============================================================================= */
+
+/* --- Morning Light (05:00–11:59, light mode) --- */
+[data-theme="light"][data-period="morning"] {
+  --accent:           #F59E0B;   /* amber */
+  --accent-hover:     #D97706;
+  --bg:               #FFFBF0;   /* warm off-white */
+  --surface:          #FEF3C7;   /* soft amber tint */
+  --text:             #1C1A12;
+  --text-muted:       #78716C;
+  --border:           #FDE68A;
+  --border-radius-card: 12px;
+}
+
+/* --- Morning Dark (05:00–11:59, dark mode) --- */
+[data-theme="dark"][data-period="morning"] {
+  --accent:           #D97706;   /* deeper amber */
+  --accent-hover:     #B45309;
+  --bg:               #1C1209;   /* near-black warm brown */
+  --surface:          #292011;
+  --text:             #FEF3C7;
+  --text-muted:       #A78B5B;
+  --border:           #3D2E10;
+  --border-radius-card: 12px;
+}
+
+/* --- Afternoon Light (12:00–17:59, light mode) --- */
+[data-theme="light"][data-period="afternoon"] {
+  --accent:           #0EA5E9;   /* sky blue */
+  --accent-hover:     #0284C7;
+  --bg:               #F0F9FF;   /* very light sky */
+  --surface:          #E0F2FE;   /* sky tint */
+  --text:             #0C1A27;
+  --text-muted:       #64748B;
+  --border:           #BAE6FD;
+  --border-radius-card: 12px;
+}
+
+/* --- Afternoon Dark (12:00–17:59, dark mode) --- */
+[data-theme="dark"][data-period="afternoon"] {
+  --accent:           #0891B2;   /* deeper teal */
+  --accent-hover:     #0E7490;
+  --bg:               #071B26;
+  --surface:          #0C2A3A;
+  --text:             #E0F2FE;
+  --text-muted:       #5BA4C0;
+  --border:           #164E6E;
+  --border-radius-card: 12px;
+}
+
+/* --- Evening Light (18:00–20:59, light mode) --- */
+[data-theme="light"][data-period="evening"] {
+  --accent:           #A855F7;   /* muted purple */
+  --accent-hover:     #9333EA;
+  --bg:               #FAF5FF;   /* lavender off-white */
+  --surface:          #F3E8FF;   /* soft purple tint */
+  --text:             #1A0A2E;
+  --text-muted:       #7C6B8A;
+  --border:           #E9D5FF;
+  --border-radius-card: 12px;
+}
+
+/* --- Evening Dark (18:00–20:59, dark mode) --- */
+[data-theme="dark"][data-period="evening"] {
+  --accent:           #7C3AED;   /* deeper purple */
+  --accent-hover:     #6D28D9;
+  --bg:               #120920;
+  --surface:          #1E0F33;
+  --text:             #F3E8FF;
+  --text-muted:       #9B7FC0;
+  --border:           #3B1F6B;
+  --border-radius-card: 12px;
+}
+
+/* --- Night Light (21:00–04:59, light mode) --- */
+[data-theme="light"][data-period="night"] {
+  --accent:           #1E3A5F;   /* deep navy on light base */
+  --accent-hover:     #152E4D;
+  --bg:               #F0F4F8;   /* cool off-white */
+  --surface:          #DDE6F0;   /* light steel-blue tint */
+  --text:             #0D1B2A;
+  --text-muted:       #5A6E82;
+  --border:           #B0C4D8;
+  --border-radius-card: 12px;
+}
+
+/* --- Night Dark (21:00–04:59, dark mode) --- */
+[data-theme="dark"][data-period="night"] {
+  --accent:           #3B82F6;   /* muted blue on midnight */
+  --accent-hover:     #2563EB;
+  --bg:               #020817;   /* deep midnight */
+  --surface:          #0B1120;
+  --text:             #E2EAF4;
+  --text-muted:       #4A6380;
+  --border:           #1A2E4A;
+  --border-radius-card: 12px;
+}
+
+/* =============================================================================
+   2. BASE RESET
+   ============================================================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* =============================================================================
+   3. HTML & BODY — smooth theme transitions
+   ============================================================================= */
+
+html {
+  /* Smooth cross-theme color transition, ≤ 300ms per Req 13.6 */
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  /* Body font applied here; display font is applied to specific elements below */
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-size: 1rem;         /* 16px base — satisfies min 14px body text (Req 13.2) */
+  line-height: 1.6;
+  min-height: 100vh;
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+/* =============================================================================
+   4. TYPOGRAPHY — display font for clock/greeting, body font for everything else
+   ============================================================================= */
+
+/* Display font targets — app.js sets these element IDs/classes */
+#clock-time,
+#clock-date,
+.greeting-heading,
+h1, h2 {
+  font-family: 'Playfair Display', 'Georgia', serif;
+  letter-spacing: 0.01em;
+}
+
+/* Ensure all other text meets minimum 14px (Req 13.2) */
+p, label, button, input, select, span, li, a {
+  font-size: max(0.875rem, 14px);
+  font-family: inherit;
+}
+
+/* =============================================================================
+   5. LAYOUT — header, main grid, footer
+   ============================================================================= */
+
+header {
+  padding: 1.5rem 1rem 0.5rem;
+  text-align: center;
+}
+
+main {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  padding: 1.25rem 1rem 2rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* Two-column grid on wider screens */
+@media (min-width: 640px) {
+  main {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+footer {
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+/* =============================================================================
+   6. CARD / SECTION STYLES — Req 13.3 (padding ≥ 16px, border-radius ≥ 8px)
+   ============================================================================= */
+
+.card,
+section {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-card, 12px); /* fallback ≥ 8px */
+  padding: 1.25rem;                               /* 20px ≥ 16px */
+  transition: background-color 300ms ease, border-color 300ms ease;
+}
+
+.card h2,
+section h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  color: var(--accent);
+}
+
+/* =============================================================================
+   7. INTERACTIVE BUTTONS — hover states ≤ 100ms (Req 13.4), transitions ≤ 300ms
+   ============================================================================= */
+
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background-color: var(--surface);
+  color: var(--text);
+  font-size: 0.9375rem;
+  cursor: pointer;
+  /* Transition covers color, background, box-shadow — all ≤ 300ms (Req 13.6) */
+  transition: background-color 200ms ease,
+              color 200ms ease,
+              box-shadow 200ms ease,
+              border-color 200ms ease;
+}
+
+button:hover {
+  background-color: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button:disabled:hover {
+  background-color: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+  box-shadow: none;
+}
+
+/* Primary / accent button variant */
+.btn-primary {
+  background-color: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+/* =============================================================================
+   8. THEME TOGGLE BUTTON — Req 10.2, transition ≤ 300ms
+   ============================================================================= */
+
+#theme-toggle {
+  position: fixed;
+  top: 0.75rem;
+  right: 1rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;   /* pill shape */
+  font-size: 1.1rem;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  cursor: pointer;
+  z-index: 100;
+  /* All interactive transitions ≤ 300ms (Req 13.6) */
+  transition: background-color 250ms ease,
+              color 250ms ease,
+              box-shadow 250ms ease,
+              border-color 250ms ease;
+}
+
+#theme-toggle:hover {
+  background-color: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+}
+
+/* =============================================================================
+   9. FORM ELEMENTS — inputs, selects
+   ============================================================================= */
+
+input[type="text"],
+input[type="number"],
+input[type="url"],
+select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background-color: var(--bg);
+  color: var(--text);
+  font-size: 0.9375rem;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="url"]:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Inline validation messages (Req 3.4, 5.5, 6.3, etc.) */
+[role="alert"] {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  color: #DC2626;
+}
+
+/* =============================================================================
+   10. CLOCK & GREETING
+   ============================================================================= */
+
+#clock-time {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+}
+
+#clock-date {
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.greeting-heading {
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 0.5rem;
+}
+
+/* =============================================================================
+   11. TASK LIST — completed task visual treatment (Req 13.5)
+   ============================================================================= */
+
+.task-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.task-item:last-child {
+  border-bottom: none;
+}
+
+.task-description {
+  flex: 1;
+  font-size: 0.9375rem;
+  word-break: break-word;
+}
+
+/* Completed task: strikethrough + reduced opacity (Req 13.5) */
+.task-item.completed .task-description {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+/* =============================================================================
+   12. TIMER
+   ============================================================================= */
+
+#timer-display {
+  font-family: 'Playfair Display', 'Georgia', serif;
+  font-size: clamp(2.5rem, 7vw, 4.5rem);
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.06em;
+  text-align: center;
+  margin: 0.5rem 0 1rem;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Timer completion notification */
+#timer-notification {
+  display: none;
+  margin-top: 0.75rem;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  background-color: var(--accent);
+  color: #fff;
+  text-align: center;
+  font-weight: 600;
+}
+
+#timer-notification.visible {
+  display: block;
+}
+
+/* =============================================================================
+   13. QUICK LINKS
+   ============================================================================= */
+
+.quick-links-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.quick-link-btn {
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  background-color: var(--accent);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background-color 200ms ease, box-shadow 200ms ease;
+}
+
+.quick-link-btn:hover {
+  background-color: var(--accent-hover);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+/* =============================================================================
+   14. NON-BLOCKING ERROR / WARNING BANNERS
+   ============================================================================= */
+
+.banner {
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+}
+
+.banner--error {
+  background-color: #FEE2E2;
+  color: #991B1B;
+  border: 1px solid #FECACA;
+}
+
+.banner--warning {
+  background-color: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+
+/* Dark mode banner adjustments */
+[data-theme="dark"] .banner--error {
+  background-color: #3B0A0A;
+  color: #FCA5A5;
+  border-color: #7F1D1D;
+}
+
+[data-theme="dark"] .banner--warning {
+  background-color: #2A1A00;
+  color: #FCD34D;
+  border-color: #6B4B00;
+}
+
+/* =============================================================================
+   15. UTILITY HELPERS
+   ============================================================================= */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.flex-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.mt-sm { margin-top: 0.5rem; }
+.mt-md { margin-top: 1rem; }
+
+/* =============================================================================
+   16. QUICK LINK ITEMS — rendered by QuickLinksModule._render()
+   ============================================================================= */
+
+.quick-link-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0.25rem 0.25rem 0.25rem 0;
+}
+
+.quick-link-delete {
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background-color: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.quick-link-delete:hover {
+  background-color: #DC2626;
+  color: #fff;
+  border-color: #DC2626;
+}
+
+/* =============================================================================
+   17. TASK EDIT INPUT — rendered by TaskModule._activateEditMode()
+   ============================================================================= */
+
+.task-edit-input {
+  flex: 1;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background-color: var(--bg);
+  color: var(--text);
+  font-size: 0.9375rem;
+}
+
+.task-edit-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+}
+
+/* =============================================================================
+   18. TIMER NOTIFICATION — shown via hidden attribute removal (not .visible class)
+   ============================================================================= */
+
+/* The JS removes/adds the `hidden` attribute; override browser's hidden behaviour
+   so our styled block element shows when the attribute is absent. */
+#timer-notification:not([hidden]) {
+  display: block;
+}
+
+/* =============================================================================
+   19. HEADER INNER LAYOUT
+   ============================================================================= */
+
+.header-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#clock-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+}
+
+/* =============================================================================
+   20. FORM LAYOUT HELPERS — task add form, link add form, timer duration form
+   ============================================================================= */
+
+.task-add-form,
+.link-add-form,
+.timer-duration-form,
+.name-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.task-add-form input,
+.link-add-form input,
+.timer-duration-form input,
+.name-form input {
+  flex: 1;
+  min-width: 0;
+}
+
+.task-sort-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.task-sort-controls select {
+  width: auto;
+}
+
+.theme-toggle-wrapper {
+  margin-top: 0.75rem;
+}
+
+.link-add-form label {
+  width: 100%;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.timer-duration-form label {
+  align-self: center;
+  white-space: nowrap;
+  font-size: 0.875rem;
+}
+
+.timer-duration-form input {
+  max-width: 80px;
+  flex: none;
+}
+
+/* Validation message spacing */
+.validation-msg {
+  width: 100%;
+  font-size: 0.8125rem;
+  color: #DC2626;
+  margin-top: 0.125rem;
+}
+
+/* #task-list is a <ul> — override default list styles */
+#task-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}

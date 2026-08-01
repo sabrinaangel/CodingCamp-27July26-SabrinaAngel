@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- FOUC prevention: must be first child of <head>, runs synchronously before first paint -->
+  <script>
+    (function () {
+      try {
+        var theme = localStorage.getItem('dashboard:theme') || 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+      try {
+        var hour = new Date().getHours();
+        var period;
+        if (hour >= 5 && hour <= 11) {
+          period = 'morning';
+        } else if (hour >= 12 && hour <= 17) {
+          period = 'afternoon';
+        } else if (hour >= 18 && hour <= 20) {
+          period = 'evening';
+        } else {
+          period = 'night';
+        }
+        document.documentElement.setAttribute('data-period', period);
+      } catch (e) {
+        var fallbackHour = new Date().getHours();
+        var fallbackPeriod;
+        if (fallbackHour >= 5 && fallbackHour <= 11) {
+          fallbackPeriod = 'morning';
+        } else if (fallbackHour >= 12 && fallbackHour <= 17) {
+          fallbackPeriod = 'afternoon';
+        } else if (fallbackHour >= 18 && fallbackHour <= 20) {
+          fallbackPeriod = 'evening';
+        } else {
+          fallbackPeriod = 'night';
+        }
+        document.documentElement.setAttribute('data-period', fallbackPeriod);
+      }
+    })();
+  </script>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Life Dashboard</title>
+
+  <!-- Google Fonts: display font for clock/greeting + body font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Greeting and live clock -->
+  <header id="header-section">
+    <div class="header-inner">
+      <h1 id="greeting-heading">Good Morning</h1>
+      <div id="clock-display">
+        <span id="clock-time">00:00:00</span>
+        <span id="clock-date">Loading…</span>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content">
+
+    <!-- Timer card -->
+    <section id="timer-section" class="card" aria-label="Pomodoro Focus Timer">
+      <h2>Focus Timer</h2>
+      <div id="timer-display">25:00</div>
+      <div id="timer-notification" role="status" aria-live="polite" hidden></div>
+      <div class="timer-controls">
+        <button id="timer-start-btn" type="button">Start</button>
+        <button id="timer-stop-btn" type="button" disabled>Stop</button>
+        <button id="timer-reset-btn" type="button">Reset</button>
+      </div>
+      <div class="timer-duration-form">
+        <label for="timer-duration-input">Duration (min)</label>
+        <input
+          id="timer-duration-input"
+          type="number"
+          min="1"
+          max="120"
+          value="25"
+          aria-describedby="timer-duration-error"
+        />
+        <button id="timer-duration-save-btn" type="button">Save</button>
+        <span id="timer-duration-error" role="alert" class="validation-msg" hidden></span>
+      </div>
+    </section>
+
+    <!-- Task list card -->
+    <section id="task-section" class="card" aria-label="Task List">
+      <h2>Tasks</h2>
+      <div class="task-add-form">
+        <label for="task-input" class="sr-only">New task</label>
+        <input
+          id="task-input"
+          type="text"
+          maxlength="200"
+          placeholder="Add a new task…"
+          aria-describedby="task-input-error"
+        />
+        <button id="task-add-btn" type="button">Add</button>
+        <span id="task-input-error" role="alert" class="validation-msg" hidden></span>
+      </div>
+      <div class="task-sort-controls">
+        <label for="task-sort-select">Sort by</label>
+        <select id="task-sort-select">
+          <option value="default">Default</option>
+          <option value="status">Status</option>
+          <option value="alphabetical">Alphabetical</option>
+        </select>
+      </div>
+      <ul id="task-list" aria-label="Task items"></ul>
+    </section>
+
+    <!-- Quick links card -->
+    <section id="links-section" class="card" aria-label="Quick Links">
+      <h2>Quick Links</h2>
+      <div class="link-add-form">
+        <label for="link-label-input">Label</label>
+        <input
+          id="link-label-input"
+          type="text"
+          maxlength="50"
+          placeholder="Link label"
+          aria-describedby="link-label-error"
+        />
+        <span id="link-label-error" role="alert" class="validation-msg" hidden></span>
+
+        <label for="link-url-input">URL</label>
+        <input
+          id="link-url-input"
+          type="url"
+          maxlength="2048"
+          placeholder="https://example.com"
+          aria-describedby="link-url-error"
+        />
+        <span id="link-url-error" role="alert" class="validation-msg" hidden></span>
+
+        <button id="link-add-btn" type="button">Add Link</button>
+      </div>
+      <div id="link-list" role="list" aria-label="Saved shortcuts"></div>
+    </section>
+
+    <!-- Settings / name card -->
+    <section id="settings-section" class="card" aria-label="Settings">
+      <h2>Settings</h2>
+
+      <!-- Name input -->
+      <div class="name-form">
+        <label for="name-input">Your name</label>
+        <input
+          id="name-input"
+          type="text"
+          maxlength="50"
+          placeholder="Your name"
+          aria-describedby="name-input-error"
+        />
+        <button id="name-save-btn" type="button">Save</button>
+        <span id="name-input-error" role="alert" class="validation-msg" hidden></span>
+      </div>
+
+      <!-- Theme toggle -->
+      <div class="theme-toggle-wrapper">
+        <button
+          id="theme-toggle-btn"
+          type="button"
+          aria-label="Switch to dark mode"
+          aria-pressed="false"
+        >
+          <span id="theme-toggle-icon" aria-hidden="true">☀️</span>
+          <span id="theme-toggle-label">Light mode</span>
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <footer id="page-footer">
+    <p>Life Dashboard — all data stored locally in your browser.</p>
+  </footer>
+
+  <script src="js/app.js" defer></script>
+</body>
+</html>
