@@ -553,14 +553,23 @@ select:focus {
   padding: 0.35rem 0.6rem;
   border: 1px solid var(--accent);
   border-radius: 6px;
-  background-color: var(--bg);
+  /* Use --surface (not --bg) so the field always has a mid-tone background
+     that contrasts against --text in every theme, including dark modes where
+     --bg is near-black and would cause invisible text. */
+  background-color: var(--surface);
   color: var(--text);
   font-size: 0.9375rem;
+  /* Ensure inherited font renders correctly and cursor is text */
+  font-family: inherit;
+  cursor: text;
 }
 
 .task-edit-input:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+  /* Accent-tinted ring — visible in both light and dark themes.
+     Falls back to a semi-transparent accent for browsers without color-mix. */
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 0, 0, 0), 0.25),
+              0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 /* =============================================================================
